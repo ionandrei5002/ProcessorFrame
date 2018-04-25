@@ -15,47 +15,13 @@ public:
     char* _data = nullptr;
 public:
     ByteBuffer():_size(0),_data(nullptr) {}
-    ByteBuffer(uint64_t size, const char* data):_size(size)
-    {
-        _data = new char[size];
-        memcpy(_data, data, size);
-    }
-    ByteBuffer(const ByteBuffer& ot)
-    {
-        _size = ot._size;
-        _data = new char[ot._size];
-        memcpy(_data, ot._data, ot._size);
-    }
-    ByteBuffer& operator=(const ByteBuffer& ot)
-    {
-        _size = ot._size;
-        _data = new char[ot._size];
-        memcpy(_data, ot._data, ot._size);
-        return *this;
-    }
-    ByteBuffer(ByteBuffer&& ot)
-    {
-        _size = ot._size;
-        _data = ot._data;
-        ot._data = nullptr;
-    }
-    ByteBuffer& operator=(ByteBuffer&& ot)
-    {
-        _size = ot._size;
-        _data = ot._data;
-        ot._data = nullptr;
-        return *this;
-    }
+    ByteBuffer(uint64_t size, const char* data);
+    ByteBuffer(const ByteBuffer& ot);
+    ByteBuffer& operator=(const ByteBuffer& ot);
+    ByteBuffer(ByteBuffer&& ot);
+    ByteBuffer& operator=(ByteBuffer&& ot);
     ByteBuffer(ViewByteBuffer& ot);
-    ~ByteBuffer()
-    {
-        if (_data != nullptr)
-        {
-            delete[] _data;
-            _data = nullptr;
-        }
-        _size = 0;
-    }
+    ~ByteBuffer();
     bool operator ==(const ByteBuffer& value);
     bool operator !=(const ByteBuffer& value);
     bool operator <(const ByteBuffer& value);
@@ -71,37 +37,13 @@ public:
     char* _data = nullptr;
 public:
     ViewByteBuffer():_size(0),_data(nullptr) {}
-    ViewByteBuffer(uint64_t size, const char* data):_size(size),_data(const_cast<char*>(data)){}
-    ViewByteBuffer(const ByteBuffer& ot)
-    {
-        _size = ot._size;
-        _data = ot._data;
-    }
-    ViewByteBuffer& operator=(const ViewByteBuffer& ot)
-    {
-        _size = ot._size;
-        _data = ot._data;
-        return *this;
-    }
-    ViewByteBuffer(ViewByteBuffer&& ot)
-    {
-        _size = ot._size;
-        _data = ot._data;
-        ot._data = nullptr;
-    }
-    ViewByteBuffer& operator=(ViewByteBuffer&& ot)
-    {
-        _size = ot._size;
-        _data = ot._data;
-        ot._data = nullptr;
-        return *this;
-    }
+    ViewByteBuffer(uint64_t size, const char* data);
+    ViewByteBuffer(const ByteBuffer& ot);
+    ViewByteBuffer& operator=(const ViewByteBuffer& ot);
+    ViewByteBuffer(ViewByteBuffer&& ot);
+    ViewByteBuffer& operator=(ViewByteBuffer&& ot);
     ViewByteBuffer(ByteBuffer& ot);
-    ~ViewByteBuffer()
-    {
-        _data = nullptr;
-        _size = 0;
-    }
+    ~ViewByteBuffer();
     bool operator ==(const ViewByteBuffer& value);
     bool operator !=(const ViewByteBuffer& value);
     bool operator <(const ViewByteBuffer& value);

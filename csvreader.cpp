@@ -7,6 +7,12 @@ uint64_t CsvReader::read()
     std::chrono::time_point<std::chrono::high_resolution_clock> start, end;
     start = std::chrono::high_resolution_clock::now();
 
+    std::vector<std::unique_ptr<String2Type>> _casters;
+    for(uint64_t i = 0; i < _schema.size(); i++)
+    {
+        _casters.push_back(builder(_schema.peek(i)));
+    }
+
     std::fstream input(_fileName);
     std::string line;
     line.reserve(1024 * 1024);
@@ -17,18 +23,15 @@ uint64_t CsvReader::read()
     {
         Row row;
         split(piece, line, ',');
-        for(size_t pos = 0; pos < piece.size(); ++pos)
+        for(size_t pos = 0; pos < _casters.size(); ++pos)
         {
             std::experimental::string_view* value = &piece[pos];
 
-            uint64_t size = value->size();
-            const char* data = value->data();
-            row.append(reinterpret_cast<char*>(&size), sizeof(size));
-            row.append(data, size);
+            _casters.at(pos)->write(value, row);
         }
 
         piece.clear();
-        _rows->push_back(row);
+        _rows->emplace_back(std::move(row));
         rowsRead++;
     }
 
@@ -63,4 +66,28 @@ void CsvReader::split(std::vector<std::experimental::string_view>& results, std:
 
     std::experimental::string_view str(start.operator ->(), static_cast<uint64_t>(next.operator ->() - start.operator ->()));
     results.push_back(str);
+}
+
+std::unique_ptr<String2Type> CsvReader::builder(Node node)
+{
+    Type::type type = node.getType();
+    switch (type) {
+        case Type::UINT8:
+        case Type::INT8:
+        case Type::UINT16:
+        case Type::INT16:
+        case Type::UINT32:
+        case Type::INT32:
+        case Type::FLOAT:
+        case Type::DOUBLE:
+            return nullptr;
+        case Type::UINT64:
+        case Type::INT64:
+            return std::make_unique<Cast2Int64>();
+        case Type::STRING:
+            return std::make_unique<Cast2String>();
+        default:
+            return nullptr;
+
+    }
 }

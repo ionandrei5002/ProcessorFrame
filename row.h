@@ -5,6 +5,8 @@
 #include <memory.h>
 #include <iostream>
 
+#include <experimental/string_view>
+
 class Row
 {
 private:
@@ -13,37 +15,17 @@ private:
     uint64_t _capacity = 0;
 public:
     Row();
-    ~Row();
-    Row(const Row& ot)
-    {
-        _size = ot._size;
-        _row = new char[ot._size];
-        memcpy(_row, ot._row, ot._size);
-    }
-    Row& operator=(const Row& ot)
-    {
-        _size = ot._size;
-        _row = new char[ot._size];
-        memcpy(_row, ot._row, ot._size);
-        return *this;
-    }
-    Row(Row&& ot)
-    {
-        _size = ot._size;
-        _row = ot._row;
-        ot._row = nullptr;
-    }
-    Row& operator=(Row&& ot)
-    {
-        _size = ot._size;
-        _row = ot._row;
-        ot._row = nullptr;
-        return *this;
-    }
+    ~Row() noexcept;
+    Row(const Row& ot) = delete;
+    Row& operator=(const Row& ot) = delete;
+    Row(Row&& ot) noexcept;
+    Row& operator=(Row&& ot) noexcept;
     void append(const char* data, uint64_t size);
     const char* buffer() const;
     uint64_t size();
     uint64_t capacity();
+    bool operator()(const Row& lv, const Row& rv);
+    bool operator<(const Row& ot) const;
     friend std::ostream& operator<<(std::ostream& out, const Row& ot);
 private:
     void resize();

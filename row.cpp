@@ -7,7 +7,37 @@ Row::Row()
     _size = 0;
 }
 
-Row::~Row()
+//Row::Row(const Row& ot)
+//{
+//    _size = ot._size;
+//    _row = new char[ot._size];
+//    memcpy(_row, ot._row, ot._size);
+//}
+
+//Row& Row::operator=(const Row& ot)
+//{
+//    _size = ot._size;
+//    _row = new char[ot._size];
+//    memcpy(_row, ot._row, ot._size);
+//    return *this;
+//}
+
+Row::Row(Row&& ot) noexcept
+{
+    _size = ot._size;
+    _row = ot._row;
+    ot._row = nullptr;
+}
+
+Row& Row::operator=(Row&& ot) noexcept
+{
+    _size = ot._size;
+    _row = ot._row;
+    ot._row = nullptr;
+    return *this;
+}
+
+Row::~Row() noexcept
 {
     delete[] _row;
     _row = nullptr;
@@ -52,6 +82,17 @@ void Row::append(const char* data, uint64_t size)
 const char* Row::buffer() const {
     return _row;
 }
+
+bool Row::operator()(const Row& lv, const Row& rv)
+{
+    return std::experimental::string_view(lv.buffer(), lv._size) < std::experimental::string_view(rv.buffer(), rv._size);
+}
+
+bool Row::operator<(const Row& ot) const
+{
+    return std::experimental::string_view(this->buffer(), this->_size) < std::experimental::string_view(ot.buffer(), ot._size);
+}
+
 std::ostream& operator<<(std::ostream& out, const Row& ot)
 {
     for(uint64_t i = 0; i < ot._size; ++i)

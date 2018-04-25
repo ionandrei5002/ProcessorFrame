@@ -1,6 +1,7 @@
 #ifndef VISITOR_H
 #define VISITOR_H
 
+#include <iostream>
 #include <vector>
 
 #include "types.h"
@@ -16,6 +17,7 @@ public:
     virtual ~Visitor() {}
     virtual uint64_t set(const char* row, uint64_t pos) = 0;
     ViewByteBuffer& get();
+    virtual void print(std::ostream& out) = 0;
 };
 
 template<typename T>
@@ -31,6 +33,13 @@ public:
 
         return (pos + size);
     }
+    void print(std::ostream& out) override
+    {
+        _val* typed_value = nullptr;
+        typed_value = reinterpret_cast<_val*>(_view._data);
+
+        out << std::to_string(*typed_value);
+    }
 };
 
 template<>
@@ -45,6 +54,10 @@ public:
         _view = ViewByteBuffer(size, &row[pos + sizeof(size)]);
 
         return (pos + sizeof(size) + size);
+    }
+    void print(std::ostream& out) override
+    {
+        out << _view;
     }
 };
 
