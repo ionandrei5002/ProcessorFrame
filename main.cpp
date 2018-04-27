@@ -5,14 +5,17 @@
 #include "schema.h"
 #include "visitor.h"
 #include "csvreader.h"
+#include "comparator.h"
 
 #include <valgrind/callgrind.h>
 
-using namespace std;
+#include <parallel/algorithm>
 
-void quickSort(uint64_t low, uint64_t high, std::vector<Row>& rows);
-void swap(uint64_t lv, uint64_t rv, std::vector<Row>& rows);
-uint64_t partition (uint64_t low, uint64_t high, std::vector<Row>& rows);
+#include "allocator/free_list_pool.h"
+
+FreeListPool freelist_pool(1l * 1024 * 1024 * 1024);
+
+using namespace std;
 
 int main()
 {
@@ -28,75 +31,49 @@ int main()
     cout << "rows readed : " << reader.read() << endl;
     cout << rows.size() << endl;
 
-    CALLGRIND_START_INSTRUMENTATION;
-
-    std::chrono::time_point<std::chrono::high_resolution_clock> start, end;
-    start = std::chrono::high_resolution_clock::now();
-
-//    std::sort(rows.begin(), rows.end());
-    quickSort(0, rows.size() - 1, rows);
-
-    end = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> elapsed_time = end - start;
-
-    std::cout << "sort duration = " << elapsed_time.count() << "s" << std::endl;
-
-    CALLGRIND_STOP_INSTRUMENTATION;
-    CALLGRIND_DUMP_STATS;
-
-    std::vector<std::unique_ptr<Visitor>> visitors;
-    visitors.push_back(std::make_unique<Int64Visitor>());
-    visitors.push_back(std::make_unique<StringVisitor>());
-    for(auto jt = rows.begin(); jt != rows.end(); ++jt)
     {
-        Row& row = (*jt);
-        uint64_t pos = 0;
-        for(auto it = visitors.begin(); it != visitors.end(); ++it)
+        std::chrono::time_point<std::chrono::high_resolution_clock> start, end;
+        start = std::chrono::high_resolution_clock::now();
+
+        Comparator comp(schema, std::vector<uint64_t>({0,1}));
+
+        std::sort_heap(rows.begin(), rows.end(), comp);
+//        __gnu_parallel::sort(rows.begin(), rows.end(), __gnu_parallel::quicksort_tag());
+
+        end = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> elapsed_time = end - start;
+
+        std::cout << "sort duration = " << elapsed_time.count() << "s" << std::endl;
+    }
+
+    {
+        std::chrono::time_point<std::chrono::high_resolution_clock> start, end;
+        start = std::chrono::high_resolution_clock::now();
+
+        std::vector<std::unique_ptr<Visitor>> visitors;
+        visitors.push_back(std::make_unique<Int64Visitor>());
+        visitors.push_back(std::make_unique<StringVisitor>());
+        for(auto jt = rows.begin(); jt != rows.end(); ++jt)
         {
-            if (pos < row.size())
-                pos += (*it)->set(row.buffer(), pos);
+            Row& row = (*jt);
+            uint64_t pos = 0;
+            for(auto it = visitors.begin(); it != visitors.end(); ++it)
+            {
+                if (pos < row.size())
+                    pos += (*it)->set(row.buffer(), pos);
+            }
+
+    //        visitors.at(0)->print(cout);
+    //        cout << " ";
+    //        visitors.at(1)->print(cout);
+    //        cout << endl;
         }
 
-//        visitors.at(0)->print(cout);
-//        cout << " ";
-//        visitors.at(1)->print(cout);
-//        cout << endl;
+        end = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> elapsed_time = end - start;
+
+        std::cout << "write duration = " << elapsed_time.count() << "s" << std::endl;
     }
 
     return 0;
-}
-
-void swap(uint64_t lv, uint64_t rv, std::vector<Row>& rows)
-{
-    Row tmp = std::move(rows[lv]);
-    rows[lv] = std::move(rows[rv]);
-    rows[rv] = std::move(tmp);
-}
-
-uint64_t partition (uint64_t low, uint64_t high, std::vector<Row>& rows)
-{
-    uint64_t pivot = high;
-    uint64_t i = (low - 1);
-
-    for (uint64_t j = low; j <= high - 1; j++)
-    {
-        if (rows[j] < rows[pivot])
-        {
-            i++;
-            swap(i, j, rows);
-        }
-    }
-    swap(i + 1, high, rows);
-    return (i + 1);
-}
-
-void quickSort(uint64_t low, uint64_t high, std::vector<Row>& rows)
-{
-    if (low < high)
-    {
-        uint64_t pi = partition(low, high, rows);
-
-        quickSort(low, pi - 1, rows);
-        quickSort(pi + 1, high, rows);
-    }
 }

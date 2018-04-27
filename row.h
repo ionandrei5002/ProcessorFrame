@@ -7,6 +7,8 @@
 
 #include <experimental/string_view>
 
+#include "allocator/free_list_allocator.h"
+
 class Row
 {
 private:
@@ -16,14 +18,14 @@ private:
 public:
     Row();
     ~Row() noexcept;
-    Row(const Row& ot) = delete;
-    Row& operator=(const Row& ot) = delete;
+    Row(const Row& ot);
+    Row& operator=(const Row& ot);
     Row(Row&& ot) noexcept;
     Row& operator=(Row&& ot) noexcept;
     void append(const char* data, uint64_t size);
     const char* buffer() const;
-    uint64_t size();
-    uint64_t capacity();
+    uint64_t size() const;
+    uint64_t capacity() const;
     bool operator()(const Row& lv, const Row& rv);
     bool operator<(const Row& ot) const;
     friend std::ostream& operator<<(std::ostream& out, const Row& ot);

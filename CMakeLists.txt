@@ -2,10 +2,17 @@ cmake_minimum_required(VERSION 2.8)
 
 project(ProcessorFrame)
 
-set(HEADERS row.h bytebuffer.h types.h schema.h visitor.h csvreader.h)
+set(HEADERS row.h bytebuffer.h types.h schema.h visitor.h csvreader.h allocator/pool_interface.h allocator/free_list_pool.h allocator/free_list_allocator.h comparator.h)
 set(SOURCES ${HEADERS} row.cpp bytebuffer.cpp schema.cpp visitor.cpp csvreader.cpp main.cpp)
 
 add_executable(${PROJECT_NAME} ${SOURCES})
+
+find_package(OpenMP)
+if (OPENMP_FOUND)
+    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+    set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
+endif()
 
 target_link_libraries(${PROJECT_NAME}
 #    tcmalloc
@@ -13,11 +20,11 @@ target_link_libraries(${PROJECT_NAME}
 
 target_compile_options(${PROJECT_NAME}
   PRIVATE
-#    -flto
+    -flto
     -march=native
     -std=c++17
-    -O
-#    -O3
+#    -O
+    -O3
     -g3
     -m64
     -fno-omit-frame-pointer

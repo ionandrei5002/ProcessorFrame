@@ -2,25 +2,25 @@
 
 Row::Row()
 {
-    _row = new char[64];
+    _row = reinterpret_cast<char*>(free_list_alloca.allocate(64));
     _capacity = 64;
     _size = 0;
 }
 
-//Row::Row(const Row& ot)
-//{
-//    _size = ot._size;
-//    _row = new char[ot._size];
-//    memcpy(_row, ot._row, ot._size);
-//}
+Row::Row(const Row& ot)
+{
+    _size = ot._size;
+    _row = reinterpret_cast<char*>(free_list_alloca.allocate(ot._size));
+    memcpy(_row, ot._row, ot._size);
+}
 
-//Row& Row::operator=(const Row& ot)
-//{
-//    _size = ot._size;
-//    _row = new char[ot._size];
-//    memcpy(_row, ot._row, ot._size);
-//    return *this;
-//}
+Row& Row::operator=(const Row& ot)
+{
+    _size = ot._size;
+    _row = reinterpret_cast<char*>(free_list_alloca.allocate(ot._size));
+    memcpy(_row, ot._row, ot._size);
+    return *this;
+}
 
 Row::Row(Row&& ot) noexcept
 {
@@ -39,27 +39,27 @@ Row& Row::operator=(Row&& ot) noexcept
 
 Row::~Row() noexcept
 {
-    delete[] _row;
+    free_list_alloca.deallocate(_row, _capacity);
     _row = nullptr;
     _capacity = 0;
     _size = 0;
 }
 
-uint64_t Row::capacity() {
+uint64_t Row::capacity() const {
     return _capacity;
 }
 
-uint64_t Row::size() {
+uint64_t Row::size() const {
     return _size;
 }
 
 void Row::resize()
 {
     uint64_t newCapacity = _capacity * 2;
-    char* newData = new char[newCapacity];
+    char* newData = reinterpret_cast<char*>(free_list_alloca.allocate(newCapacity));
     memcpy(newData, _row, _size);
 
-    delete[] _row;
+    free_list_alloca.deallocate(_row, _capacity);
     _row = nullptr;
 
     _row = newData;

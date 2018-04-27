@@ -31,7 +31,7 @@ uint64_t CsvReader::read()
         }
 
         piece.clear();
-        _rows->emplace_back(std::move(row));
+        _rows->emplace_back(row);
         rowsRead++;
     }
 
