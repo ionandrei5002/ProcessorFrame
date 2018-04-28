@@ -23,8 +23,8 @@ target_compile_options(${PROJECT_NAME}
     -flto
     -march=native
     -std=c++17
-#    -O
-    -O3
+    -O2
+#    -O3
     -g3
     -m64
     -fno-omit-frame-pointer

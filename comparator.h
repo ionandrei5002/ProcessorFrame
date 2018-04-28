@@ -12,8 +12,8 @@ class Comparator
 private:
     Schema _schema;
     std::vector<uint64_t> _columns;
-    std::vector<std::unique_ptr<Visitor>> _lv;
-    std::vector<std::unique_ptr<Visitor>> _rv;
+    std::vector<std::shared_ptr<Visitor>> _lv;
+    std::vector<std::shared_ptr<Visitor>> _rv;
 public:
     Comparator(Schema schema, std::vector<uint64_t> columns):_schema(schema), _columns(columns)
     {
@@ -55,7 +55,7 @@ public:
 
         return *this;
     }
-    static std::unique_ptr<Visitor> builder(Node node)
+    static std::shared_ptr<Visitor> builder(Node node)
     {
         Type::type type = node.getType();
         switch (type) {
@@ -70,9 +70,9 @@ public:
                 return nullptr;
             case Type::UINT64:
             case Type::INT64:
-                return std::make_unique<Int64Visitor>();
+                return std::make_shared<Int64Visitor>();
             case Type::STRING:
-                return std::make_unique<StringVisitor>();
+                return std::make_shared<StringVisitor>();
             default:
                 return nullptr;
 
@@ -81,19 +81,14 @@ public:
     inline bool operator()(const Row& lv, const Row& rv) const
     {
         {
-            uint64_t pos = 0;
-            for(auto it = _lv.begin(); it != _lv.end(); ++it)
+            uint64_t lvpos = 0;
+            uint64_t rvpos = 0;
+            for(uint64_t i = 0; i < _lv.size(); ++i)
             {
-                if (pos < lv.size())
-                    pos += (*it)->set(lv.buffer(), pos);
-            }
-        }
-        {
-            uint64_t pos = 0;
-            for(auto it = _rv.begin(); it != _rv.end(); ++it)
-            {
-                if (pos < rv.size())
-                    pos += (*it)->set(rv.buffer(), pos);
+                if (lvpos < lv.size())
+                    lvpos += _lv[i]->set(lv.buffer(), lvpos);
+                if (rvpos < rv.size())
+                    rvpos += _rv[i]->set(rv.buffer(), rvpos);
             }
         }
 
@@ -102,9 +97,12 @@ public:
         for(auto it = _columns.begin(); it != _columns.end(); ++it)
         {
             uint64_t pos = (*it);
-            if (_lv[pos]->get() != _rv[pos]->get())
+            ViewByteBuffer lvview = std::move(_lv[pos]->get());
+            ViewByteBuffer rvview = std::move(_rv[pos]->get());
+            if (lvview != rvview)
             {
-                _comp = (_lv[pos]->get() < _rv[pos]->get());
+                _comp = (lvview < rvview);
+                return _comp;
             }
         }
 

@@ -27,7 +27,7 @@ int main()
 
     std::vector<Row> rows;
 
-    CsvReader reader("/home/andrei/Desktop/desktop/MC5Dau.csv", schema, &rows);
+    CsvReader reader("/home/andrei/Desktop/MC5Dau.csv", schema, &rows);
     cout << "rows readed : " << reader.read() << endl;
     cout << rows.size() << endl;
 
@@ -37,6 +37,7 @@ int main()
 
         Comparator comp(schema, std::vector<uint64_t>({0,1}));
 
+//        std::sort_heap(rows.begin(), rows.end());
         std::sort_heap(rows.begin(), rows.end(), comp);
 //        __gnu_parallel::sort(rows.begin(), rows.end(), __gnu_parallel::quicksort_tag());
 
@@ -63,10 +64,10 @@ int main()
                     pos += (*it)->set(row.buffer(), pos);
             }
 
-    //        visitors.at(0)->print(cout);
-    //        cout << " ";
-    //        visitors.at(1)->print(cout);
-    //        cout << endl;
+//            visitors.at(0)->print(cout);
+//            cout << " ";
+//            visitors.at(1)->print(cout);
+//            cout << endl;
         }
 
         end = std::chrono::high_resolution_clock::now();
