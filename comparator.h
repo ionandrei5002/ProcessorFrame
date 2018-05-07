@@ -80,16 +80,14 @@ public:
     }
     inline bool operator()(const Row& lv, const Row& rv) const
     {
+        uint64_t lvpos = 0;
+        uint64_t rvpos = 0;
+        for(uint64_t i = 0; i < _lv.size(); ++i)
         {
-            uint64_t lvpos = 0;
-            uint64_t rvpos = 0;
-            for(uint64_t i = 0; i < _lv.size(); ++i)
-            {
-                if (lvpos < lv.size())
-                    lvpos += _lv[i]->set(lv.buffer(), lvpos);
-                if (rvpos < rv.size())
-                    rvpos += _rv[i]->set(rv.buffer(), rvpos);
-            }
+            if (lvpos < lv.size())
+                lvpos += _lv[i]->set(lv.buffer(), lvpos);
+            if (rvpos < rv.size())
+                rvpos += _rv[i]->set(rv.buffer(), rvpos);
         }
 
         bool _comp = false;
@@ -101,8 +99,7 @@ public:
             ViewByteBuffer rvview = std::move(_rv[pos]->get());
             if (lvview != rvview)
             {
-                _comp = (lvview < rvview);
-                return _comp;
+                return (lvview < rvview);
             }
         }
 

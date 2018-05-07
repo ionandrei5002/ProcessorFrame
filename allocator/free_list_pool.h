@@ -27,7 +27,7 @@ private:
 	char* tail = nullptr;
 	uint32_t m_header_size = 8;
     uint32_t m_block_size = 8;
-	uint32_t m_pow_2 = 3;
+    uint32_t m_pow_2 = 3;
     uint64_t list_size = 0;
 public:
     explicit FreeListPool(uint64_t size)
