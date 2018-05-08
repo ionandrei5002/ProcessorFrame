@@ -47,6 +47,20 @@ public:
 };
 
 template<>
+class Cast2Type<FloatType>: public String2Type
+{
+private:
+    typedef typename FloatType::c_type _val;
+public:
+    void write(std::experimental::string_view* value, Row& row) override
+    {
+        _val cast_value = 0;
+        boost::spirit::qi::parse(value->begin(), value->end(), boost::spirit::qi::float_, cast_value);
+        row.append(reinterpret_cast<char*>(&cast_value), sizeof(_val));
+    }
+};
+
+template<>
 class Cast2Type<StringType>: public String2Type
 {
 public:

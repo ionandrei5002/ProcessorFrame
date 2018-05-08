@@ -78,9 +78,10 @@ std::unique_ptr<String2Type> CsvReader::builder(Node node)
         case Type::INT16:
         case Type::UINT32:
         case Type::INT32:
+            return nullptr;
         case Type::FLOAT:
         case Type::DOUBLE:
-            return nullptr;
+            return std::make_unique<Cast2Float>();
         case Type::UINT64:
         case Type::INT64:
             return std::make_unique<Cast2Int64>();

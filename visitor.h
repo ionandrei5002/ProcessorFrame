@@ -18,6 +18,8 @@ public:
     virtual uint64_t set(const char* row, uint64_t pos) = 0;
     ViewByteBuffer& get();
     virtual void print(std::ostream& out) = 0;
+    virtual bool operator !=(const std::shared_ptr<Visitor>& value) = 0;
+    virtual bool operator <(const std::shared_ptr<Visitor>& value) = 0;
 };
 
 template<typename T>
@@ -29,6 +31,7 @@ public:
     uint64_t set(const char* row, uint64_t pos) override
     {
         uint64_t size = sizeof(_val);
+        std::cout << (pos + size) << std::endl;
         _view = ViewByteBuffer(size, &row[pos]);
 
         return (pos + size);
@@ -39,6 +42,24 @@ public:
         typed_value = reinterpret_cast<_val*>(_view._data);
 
         out << std::to_string(*typed_value);
+    }
+    bool operator !=(const std::shared_ptr<Visitor>& value) override
+    {
+        _val _lv, _rv;
+
+        _lv = *reinterpret_cast<_val*>(_view._data);
+        _rv = *reinterpret_cast<_val*>(value->get()._data);
+
+        return (_lv < _rv) || (_lv > _rv);
+    }
+    bool operator <(const std::shared_ptr<Visitor>& value) override
+    {
+        _val _lv, _rv;
+
+        _lv = *reinterpret_cast<_val*>(_view._data);
+        _rv = *reinterpret_cast<_val*>(value->get()._data);
+
+        return (_lv < _rv);
     }
 };
 
@@ -58,6 +79,14 @@ public:
     void print(std::ostream& out) override
     {
         out << _view;
+    }
+    bool operator !=(const std::shared_ptr<Visitor>& value) override
+    {
+        return (_view != value->get());
+    }
+    bool operator <(const std::shared_ptr<Visitor>& value) override
+    {
+        return (_view < value->get());
     }
 };
 

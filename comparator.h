@@ -65,9 +65,10 @@ public:
             case Type::INT16:
             case Type::UINT32:
             case Type::INT32:
+                return nullptr;
             case Type::FLOAT:
             case Type::DOUBLE:
-                return nullptr;
+                return std::make_shared<FloatVisitor>();
             case Type::UINT64:
             case Type::INT64:
                 return std::make_shared<Int64Visitor>();
@@ -95,11 +96,15 @@ public:
         for(auto it = _columns.begin(); it != _columns.end(); ++it)
         {
             uint64_t pos = (*it);
-            ViewByteBuffer lvview = std::move(_lv[pos]->get());
-            ViewByteBuffer rvview = std::move(_rv[pos]->get());
-            if (lvview != rvview)
+//            ViewByteBuffer lvview = std::move(_lv[pos]->get());
+//            ViewByteBuffer rvview = std::move(_rv[pos]->get());
+//            if (lvview != rvview)
+//            {
+//                return (lvview < rvview);
+//            }
+            if (_lv[pos]->operator!=(_rv[pos]))
             {
-                return (lvview < rvview);
+                return (_lv[pos]->operator<(_rv[pos]));
             }
         }
 
