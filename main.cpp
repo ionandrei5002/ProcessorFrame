@@ -16,24 +16,43 @@ using namespace std;
 int main()
 {
     Schema schema;
-    schema.push(Node("u1", Type::STRING))
-            .push(Node("u2", Type::INT64))
-            .push(Node("u3", Type::INT64))
-            .push(Node("u4", Type::FLOAT))
-            .push(Node("u5", Type::FLOAT))
-            .push(Node("u6", Type::STRING))
-            .push(Node("u7", Type::FLOAT))
-            .push(Node("u8", Type::FLOAT))
-            .push(Node("u9", Type::FLOAT))
-            .push(Node("u10", Type::STRING))
-            .push(Node("u11", Type::STRING))
-            .push(Node("u12", Type::INT64));
+//    schema.push(Node("u1", Type::STRING))
+//            .push(Node("u2", Type::INT64))
+//            .push(Node("u3", Type::INT64))
+//            .push(Node("u4", Type::FLOAT))
+//            .push(Node("u5", Type::FLOAT))
+//            .push(Node("u6", Type::STRING))
+//            .push(Node("u7", Type::FLOAT))
+//            .push(Node("u8", Type::FLOAT))
+//            .push(Node("u9", Type::FLOAT))
+//            .push(Node("u10", Type::STRING))
+//            .push(Node("u11", Type::STRING))
+//            .push(Node("u12", Type::INT64));
+        schema.push(Node("u1", Type::STRING))
+                .push(Node("u2", Type::STRING))
+                .push(Node("u3", Type::INT64))
+                .push(Node("u4", Type::INT64))
+                .push(Node("u5", Type::INT64))
+                .push(Node("u6", Type::INT64))
+                .push(Node("u7", Type::INT64))
+                .push(Node("u8", Type::INT64))
+                .push(Node("u9", Type::INT64))
+                .push(Node("u10", Type::INT64))
+                .push(Node("u11", Type::STRING))
+                .push(Node("u12", Type::STRING))
+                .push(Node("u13", Type::STRING))
+                .push(Node("u14", Type::INT64))
+                .push(Node("u15", Type::STRING))
+                .push(Node("u16", Type::STRING))
+                .push(Node("u17", Type::STRING))
+                .push(Node("u18", Type::INT64));
 
     cout << schema << endl;
 
     std::vector<Row> rows;
 
-    CsvReader reader("/home/andrei/Desktop/desktop/sf_android.csv", schema, &rows);
+//    CsvReader reader("/home/andrei/Desktop/desktop/sf_android.csv", schema, &rows);
+    CsvReader reader("/home/andrei/Desktop/dataset.csv", schema, &rows);
     cout << "rows readed : " << reader.read() << endl;
     cout << rows.size() << endl;
 
@@ -60,56 +79,29 @@ int main()
         std::ofstream out("/home/andrei/Desktop/output.txt");
 
         std::vector<std::unique_ptr<Visitor>> visitors;
-        visitors.push_back(std::make_unique<StringVisitor>());
-        visitors.push_back(std::make_unique<Int64Visitor>());
-        visitors.push_back(std::make_unique<Int64Visitor>());
-        visitors.push_back(std::make_unique<FloatVisitor>());
-        visitors.push_back(std::make_unique<FloatVisitor>());
-        visitors.push_back(std::make_unique<StringVisitor>());
-        visitors.push_back(std::make_unique<FloatVisitor>());
-        visitors.push_back(std::make_unique<FloatVisitor>());
-        visitors.push_back(std::make_unique<FloatVisitor>());
-        visitors.push_back(std::make_unique<StringVisitor>());
-        visitors.push_back(std::make_unique<StringVisitor>());
-        visitors.push_back(std::make_unique<Int64Visitor>());
+        for(uint64_t i = 0; i < schema.size(); i++)
+        {
+            visitors.push_back(Visitor::builder(schema.peek(i)));
+        }
         for(auto jt = rows.begin(); jt != rows.end(); ++jt)
         {
             Row& row = (*jt);
-            std::cout << row.size() << std::endl;
-            std::cout << row.capacity() << std::endl;
             uint64_t pos = 0;
-            for(uint64_t i = 0; i < visitors.size(); i++)
+            for(auto it = visitors.begin(); it != visitors.end(); ++it)
             {
                 if (pos < row.size())
                 {
-//                    std::cout << pos << std::endl;
-                    pos += visitors[i]->set(row.buffer(), pos);
+                    pos = (*it)->set(row.buffer(), pos);
                 } else {
                     std::cout << "bad field position: " << pos << std::endl;
                 }
             }
-            for(uint64_t i = 0; i < visitors.size(); i++)
+            for(auto it = visitors.begin(); it != visitors.end(); ++it)
             {
-                visitors[i]->print(out);
+                (*it)->print(out);
                 out << ",";
             }
             out << endl;
-//            for(auto it = visitors.begin(); it != visitors.end(); ++it)
-//            {
-//                if (pos < row.size())
-//                {
-//                    std::cout << pos << std::endl;
-//                    pos += (*it)->set(row.buffer(), pos);
-//                } else {
-//                    std::cout << "bad field position: " << pos << std::endl;
-//                }
-//            }
-//            for(auto it = visitors.begin(); it != visitors.end(); ++it)
-//            {
-//                (*it)->print(out);
-//                out << ",";
-//            }
-//            out << endl;
         }
 
         out.close();

@@ -89,6 +89,5 @@ std::unique_ptr<String2Type> CsvReader::builder(Node node)
             return std::make_unique<Cast2String>();
         default:
             return nullptr;
-
     }
 }

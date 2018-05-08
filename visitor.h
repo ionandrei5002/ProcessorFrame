@@ -6,6 +6,7 @@
 
 #include "types.h"
 #include "bytebuffer.h"
+#include "schema.h"
 
 class Visitor
 {
@@ -17,6 +18,7 @@ public:
     virtual ~Visitor() {}
     virtual uint64_t set(const char* row, uint64_t pos) = 0;
     ViewByteBuffer& get();
+    static std::unique_ptr<Visitor> builder(Node node);
     virtual void print(std::ostream& out) = 0;
     virtual bool operator !=(const std::shared_ptr<Visitor>& value) = 0;
     virtual bool operator <(const std::shared_ptr<Visitor>& value) = 0;
@@ -31,7 +33,6 @@ public:
     uint64_t set(const char* row, uint64_t pos) override
     {
         uint64_t size = sizeof(_val);
-        std::cout << (pos + size) << std::endl;
         _view = ViewByteBuffer(size, &row[pos]);
 
         return (pos + size);
