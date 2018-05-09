@@ -86,9 +86,9 @@ public:
         for(uint64_t i = 0; i < _lv.size(); ++i)
         {
             if (lvpos < lv.size())
-                lvpos += _lv[i]->set(lv.buffer(), lvpos);
+                lvpos = _lv[i]->set(lv.buffer(), lvpos);
             if (rvpos < rv.size())
-                rvpos += _rv[i]->set(rv.buffer(), rvpos);
+                rvpos = _rv[i]->set(rv.buffer(), rvpos);
         }
 
         bool _comp = false;
@@ -96,15 +96,10 @@ public:
         for(auto it = _columns.begin(); it != _columns.end(); ++it)
         {
             uint64_t pos = (*it);
-//            ViewByteBuffer lvview = std::move(_lv[pos]->get());
-//            ViewByteBuffer rvview = std::move(_rv[pos]->get());
-//            if (lvview != rvview)
-//            {
-//                return (lvview < rvview);
-//            }
             if (_lv[pos]->operator!=(_rv[pos]))
             {
-                return (_lv[pos]->operator<(_rv[pos]));
+                _comp = (_lv[pos]->operator<(_rv[pos]));
+                return _comp;
             }
         }
 
