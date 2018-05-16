@@ -16,6 +16,7 @@ endif()
 
 target_link_libraries(${PROJECT_NAME}
 #    tcmalloc
+    stdc++fs
 )
 
 target_compile_options(${PROJECT_NAME}

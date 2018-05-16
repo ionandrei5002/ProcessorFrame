@@ -33,6 +33,48 @@ public:
 };
 
 template<>
+class Cast2Type<UInt32Type>: public String2Type
+{
+private:
+    typedef typename UInt32Type::c_type _val;
+public:
+    void write(std::experimental::string_view* value, Row& row) override
+    {
+        _val cast_value = 0;
+        boost::spirit::qi::parse(value->begin(), value->end(), boost::spirit::qi::uint_, cast_value);
+        row.append(reinterpret_cast<char*>(&cast_value), sizeof(_val));
+    }
+};
+
+template<>
+class Cast2Type<Int32Type>: public String2Type
+{
+private:
+    typedef typename Int32Type::c_type _val;
+public:
+    void write(std::experimental::string_view* value, Row& row) override
+    {
+        _val cast_value = 0;
+        boost::spirit::qi::parse(value->begin(), value->end(), boost::spirit::qi::int_, cast_value);
+        row.append(reinterpret_cast<char*>(&cast_value), sizeof(_val));
+    }
+};
+
+template<>
+class Cast2Type<UInt64Type>: public String2Type
+{
+private:
+    typedef typename UInt64Type::c_type _val;
+public:
+    void write(std::experimental::string_view* value, Row& row) override
+    {
+        _val cast_value = 0;
+        boost::spirit::qi::parse(value->begin(), value->end(), boost::spirit::qi::ulong_, cast_value);
+        row.append(reinterpret_cast<char*>(&cast_value), sizeof(_val));
+    }
+};
+
+template<>
 class Cast2Type<Int64Type>: public String2Type
 {
 private:
@@ -56,6 +98,20 @@ public:
     {
         _val cast_value = 0;
         boost::spirit::qi::parse(value->begin(), value->end(), boost::spirit::qi::float_, cast_value);
+        row.append(reinterpret_cast<char*>(&cast_value), sizeof(_val));
+    }
+};
+
+template<>
+class Cast2Type<DoubleType>: public String2Type
+{
+private:
+    typedef typename DoubleType::c_type _val;
+public:
+    void write(std::experimental::string_view* value, Row& row) override
+    {
+        _val cast_value = 0;
+        boost::spirit::qi::parse(value->begin(), value->end(), boost::spirit::qi::double_, cast_value);
         row.append(reinterpret_cast<char*>(&cast_value), sizeof(_val));
     }
 };

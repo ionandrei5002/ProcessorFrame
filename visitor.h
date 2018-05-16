@@ -42,7 +42,7 @@ public:
         _val* typed_value = nullptr;
         typed_value = reinterpret_cast<_val*>(_view._data);
 
-        out << std::to_string(*typed_value);
+        out << *typed_value;
     }
     bool operator !=(const std::shared_ptr<Visitor>& value) override
     {

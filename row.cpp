@@ -99,10 +99,7 @@ bool Row::operator<(const Row& ot) const
 
 std::ostream& operator<<(std::ostream& out, const Row& ot)
 {
-    for(uint64_t i = 0; i < ot._size; ++i)
-    {
-        out << ot._row[i];
-    }
+    out.write(ot.buffer(), ot.size());
 
     return out;
 }

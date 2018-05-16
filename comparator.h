@@ -60,16 +60,23 @@ public:
         Type::type type = node.getType();
         switch (type) {
             case Type::UINT8:
+                return std::make_shared<UInt8Visitor>();
             case Type::INT8:
+                return std::make_shared<Int8Visitor>();
             case Type::UINT16:
+                return std::make_shared<UInt16Visitor>();
             case Type::INT16:
+                return std::make_shared<Int16Visitor>();
             case Type::UINT32:
+                return std::make_shared<UInt32Visitor>();
             case Type::INT32:
-                return nullptr;
+                return std::make_shared<Int32Visitor>();
             case Type::FLOAT:
-            case Type::DOUBLE:
                 return std::make_shared<FloatVisitor>();
+            case Type::DOUBLE:
+                return std::make_shared<DoubleVisitor>();
             case Type::UINT64:
+                return std::make_shared<UInt64Visitor>();
             case Type::INT64:
                 return std::make_shared<Int64Visitor>();
             case Type::STRING:
@@ -85,10 +92,8 @@ public:
         uint64_t rvpos = 0;
         for(uint64_t i = 0; i < _lv.size(); ++i)
         {
-            if (lvpos < lv.size())
-                lvpos = _lv[i]->set(lv.buffer(), lvpos);
-            if (rvpos < rv.size())
-                rvpos = _rv[i]->set(rv.buffer(), rvpos);
+            lvpos = _lv[i]->set(lv.buffer(), lvpos);
+            rvpos = _rv[i]->set(rv.buffer(), rvpos);
         }
 
         bool _comp = false;
