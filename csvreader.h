@@ -17,7 +17,7 @@ class String2Type
 {
 public:
     virtual ~String2Type() {}
-    virtual void write(std::experimental::string_view* value, Row& row) = 0;
+    virtual void write(std::experimental::string_view* value, RawRow& row) = 0;
 };
 
 template<typename T>
@@ -26,7 +26,7 @@ class Cast2Type: public String2Type
 private:
     typedef typename T::c_type _val;
 public:
-    void write(std::experimental::string_view* value, Row& row) override
+    void write(std::experimental::string_view* value, RawRow& row) override
     {
         throw;
     }
@@ -38,7 +38,7 @@ class Cast2Type<UInt32Type>: public String2Type
 private:
     typedef typename UInt32Type::c_type _val;
 public:
-    void write(std::experimental::string_view* value, Row& row) override
+    void write(std::experimental::string_view* value, RawRow& row) override
     {
         _val cast_value = 0;
         boost::spirit::qi::parse(value->begin(), value->end(), boost::spirit::qi::uint_, cast_value);
@@ -52,7 +52,7 @@ class Cast2Type<Int32Type>: public String2Type
 private:
     typedef typename Int32Type::c_type _val;
 public:
-    void write(std::experimental::string_view* value, Row& row) override
+    void write(std::experimental::string_view* value, RawRow& row) override
     {
         _val cast_value = 0;
         boost::spirit::qi::parse(value->begin(), value->end(), boost::spirit::qi::int_, cast_value);
@@ -66,7 +66,7 @@ class Cast2Type<UInt64Type>: public String2Type
 private:
     typedef typename UInt64Type::c_type _val;
 public:
-    void write(std::experimental::string_view* value, Row& row) override
+    void write(std::experimental::string_view* value, RawRow& row) override
     {
         _val cast_value = 0;
         boost::spirit::qi::parse(value->begin(), value->end(), boost::spirit::qi::ulong_, cast_value);
@@ -80,7 +80,7 @@ class Cast2Type<Int64Type>: public String2Type
 private:
     typedef typename Int64Type::c_type _val;
 public:
-    void write(std::experimental::string_view* value, Row& row) override
+    void write(std::experimental::string_view* value, RawRow& row) override
     {
         _val cast_value = 0;
         boost::spirit::qi::parse(value->begin(), value->end(), boost::spirit::qi::long_, cast_value);
@@ -94,7 +94,7 @@ class Cast2Type<FloatType>: public String2Type
 private:
     typedef typename FloatType::c_type _val;
 public:
-    void write(std::experimental::string_view* value, Row& row) override
+    void write(std::experimental::string_view* value, RawRow& row) override
     {
         _val cast_value = 0;
         boost::spirit::qi::parse(value->begin(), value->end(), boost::spirit::qi::float_, cast_value);
@@ -108,7 +108,7 @@ class Cast2Type<DoubleType>: public String2Type
 private:
     typedef typename DoubleType::c_type _val;
 public:
-    void write(std::experimental::string_view* value, Row& row) override
+    void write(std::experimental::string_view* value, RawRow& row) override
     {
         _val cast_value = 0;
         boost::spirit::qi::parse(value->begin(), value->end(), boost::spirit::qi::double_, cast_value);
@@ -120,7 +120,7 @@ template<>
 class Cast2Type<StringType>: public String2Type
 {
 public:
-    void write(std::experimental::string_view* value, Row& row) override
+    void write(std::experimental::string_view* value, RawRow& row) override
     {
         uint64_t size = value->size();
         const char* data = value->data();

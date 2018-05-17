@@ -78,7 +78,7 @@ std::ostream& operator<<(std::ostream& out, const ByteBuffer& ot)
 
 ViewByteBuffer::ViewByteBuffer(uint64_t size, const char* data):_size(size),_data(const_cast<char*>(data)){}
 
-ViewByteBuffer::ViewByteBuffer(const ByteBuffer& ot)
+ViewByteBuffer::ViewByteBuffer(const ViewByteBuffer& ot)
 {
     _size = ot._size;
     _data = ot._data;
@@ -149,4 +149,16 @@ std::ostream& operator<<(std::ostream& out, const ViewByteBuffer& ot)
 bool operator<(const ViewByteBuffer& lv, const ViewByteBuffer& rv)
 {
     return std::experimental::string_view(lv._data, lv._size) < std::experimental::string_view(rv._data, rv._size);
+}
+
+ByteBuffer::ByteBuffer(ViewByteBuffer& ot)
+{
+    _size = ot._size;
+    _data = new char[ot._size];
+    memcpy(_data, ot._data, ot._size);
+}
+ViewByteBuffer::ViewByteBuffer(ByteBuffer& ot)
+{
+    _size = ot._size;
+    _data = ot._data;
 }

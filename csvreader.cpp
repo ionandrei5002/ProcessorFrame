@@ -19,9 +19,9 @@ uint64_t CsvReader::read()
     std::vector<std::experimental::string_view> piece;
 
     std::getline(input, line);
+    RawRow row;
     while(std::getline(input, line))
     {
-        Row row;
         split(piece, line, ',');
         for(size_t pos = 0; pos < _casters.size(); ++pos)
         {
@@ -31,7 +31,8 @@ uint64_t CsvReader::read()
         }
 
         piece.clear();
-        _rows->emplace_back(row);
+        _rows->emplace_back(Row(row.buffer(), row.size()));
+        row.reset();
         rowsRead++;
     }
 

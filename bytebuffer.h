@@ -38,7 +38,7 @@ public:
 public:
     ViewByteBuffer():_size(0),_data(nullptr) {}
     ViewByteBuffer(uint64_t size, const char* data);
-    ViewByteBuffer(const ByteBuffer& ot);
+    ViewByteBuffer(const ViewByteBuffer& ot);
     ViewByteBuffer& operator=(const ViewByteBuffer& ot);
     ViewByteBuffer(ViewByteBuffer&& ot);
     ViewByteBuffer& operator=(ViewByteBuffer&& ot);

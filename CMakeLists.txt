@@ -2,8 +2,28 @@ cmake_minimum_required(VERSION 2.8)
 
 project(ProcessorFrame)
 
-set(HEADERS row.h bytebuffer.h types.h schema.h visitor.h csvreader.h allocator/pool_interface.h allocator/free_list_pool.h allocator/free_list_allocator.h comparator.h)
-set(SOURCES ${HEADERS} row.cpp bytebuffer.cpp schema.cpp visitor.cpp csvreader.cpp main.cpp)
+set(HEADERS
+        row.h
+        bytebuffer.h
+        types.h
+        schema.h
+        visitor.h
+        csvreader.h
+        allocator/pool_interface.h
+        allocator/free_list_pool.h
+        allocator/free_list_allocator.h
+        comparator.h
+        value.h
+)
+set(SOURCES ${HEADERS}
+        row.cpp
+        bytebuffer.cpp
+        schema.cpp
+        visitor.cpp
+        csvreader.cpp
+        main.cpp
+        value.cpp
+)
 
 add_executable(${PROJECT_NAME} ${SOURCES})
 
@@ -55,7 +75,7 @@ target_compile_options(${PROJECT_NAME}
     -Wno-language-extension-token
     -fstrict-aliasing
     -Wconversion
-    -Wfloat-equal
+#    -Wfloat-equal
     -Wold-style-cast
     -Wunreachable-code
     -Wshadow

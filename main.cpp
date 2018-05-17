@@ -7,6 +7,7 @@
 #include "visitor.h"
 #include "csvreader.h"
 #include "comparator.h"
+#include "value.h"
 
 using namespace std;
 
@@ -37,7 +38,6 @@ int main()
     {
         std::chrono::time_point<std::chrono::high_resolution_clock> start, end;
         start = std::chrono::high_resolution_clock::now();
-
         for(auto it = files.begin(); it != files.end(); ++it)
         {
             CsvReader reader(source + (*it), schema, &rows);
@@ -51,28 +51,26 @@ int main()
         std::cout << "read duration = " << elapsed_time.count() << "s" << std::endl;
     }
 
-//    {
-//        std::chrono::time_point<std::chrono::high_resolution_clock> start, end;
-//        start = std::chrono::high_resolution_clock::now();
-
-//        Comparator comp(schema, std::vector<uint64_t>({2,3,4}));
-
-//        std::sort(rows.begin(), rows.end(), std::ref(comp));
-
-//        end = std::chrono::high_resolution_clock::now();
-//        std::chrono::duration<double> elapsed_time = end - start;
-
-//        std::cout << "sort duration = " << elapsed_time.count() << "s" << std::endl;
-//    }
-
     {
         std::chrono::time_point<std::chrono::high_resolution_clock> start, end;
         start = std::chrono::high_resolution_clock::now();
 
+        Comparator comp(schema, std::vector<uint64_t>({2}));
+
+        std::sort(rows.begin(), rows.end(), std::ref(comp));
+
+        end = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> elapsed_time = end - start;
+
+        std::cout << "sort duration = " << elapsed_time.count() << "s" << std::endl;
+    }
+
+    {
+        uint64_t rows_bytes = 0;
+        std::chrono::time_point<std::chrono::high_resolution_clock> start, end;
+        start = std::chrono::high_resolution_clock::now();
+
         std::ofstream out("/home/andrei/Desktop/output.txt");
-        const int buffSize = 16 * 1024 * 1024;
-        char* buffer = new char[buffSize];
-        out.rdbuf()->pubsetbuf(buffer, buffSize);
 
         std::vector<std::unique_ptr<Visitor>> visitors;
         for(uint64_t i = 0; i < schema.size(); i++)
@@ -80,26 +78,23 @@ int main()
             visitors.push_back(Visitor::builder(schema.peek(i)));
         }
 
-        std::string date = "2015-08-12";
-        std::experimental::string_view view(date.data(), date.size());
-        Cast2String str;
-        Row rr;
-        str.write(&view, rr);
-        std::shared_ptr<Visitor> condition = std::make_shared<StringVisitor>();
-        condition->set(rr.buffer(), 0);
-        condition->print(std::cout);
+        std::string dt("2015-08-15");
+        std::unique_ptr<Value> date = MakeStringValue(dt);
+        date->print(std::cout);
         std::cout << std::endl;
 
         int rows_write = 0;
         for(auto jt = rows.begin(); jt != rows.end(); ++jt)
         {
             Row& row = (*jt);
+            rows_bytes += row.size();
             uint64_t pos = 0;
             for(uint64_t i = 0; i < visitors.size(); i++)
             {
                 pos = visitors[i]->set(row.buffer(), pos);
             }
-            if (visitors[2]->operator!=(condition) == false)
+            std::unique_ptr<Value> val = visitors[2]->getValue();
+            if (val->operator<(date))
             {
                 for(uint64_t i = 0; i < (visitors.size() - 1); i++)
                 {
@@ -110,17 +105,22 @@ int main()
 
                 out << endl;
                 rows_write++;
+            } else {
+                break;
             }
         }
 
         std::cout << "rows write: " << rows_write << std::endl;
 
         out.close();
-        delete[] buffer;
+
         end = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double> elapsed_time = end - start;
 
         std::cout << "write duration = " << elapsed_time.count() << "s" << std::endl;
+        std::cout << "memory used: " << ((rows.capacity() * sizeof(Row) + rows_bytes) / 1024) << " kb" << std::endl;
+        std::cout << "memory rows: " << (rows_bytes / 1024) << " kb" << std::endl;
+        std::cout << "avg row size: " << (rows_bytes / rows.size()) << " b" << std::endl;
     }
 
     return 0;
