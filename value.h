@@ -138,24 +138,24 @@ typedef TypedValue<FloatType> FloatValue;
 typedef TypedValue<DoubleType> DoubleValue;
 typedef TypedValue<StringType> StringValue;
 
-std::unique_ptr<Value> MakeUInt8Value(std::string& value);
+std::unique_ptr<Value> MakeUInt8Value(std::string value);
 std::unique_ptr<Value> MakeUInt8Value(uint8_t value);
-std::unique_ptr<Value> MakeUInt16Value(std::string& value);
+std::unique_ptr<Value> MakeUInt16Value(std::string value);
 std::unique_ptr<Value> MakeUInt16Value(uint16_t value);
-std::unique_ptr<Value> MakeUInt32Value(std::string& value);
+std::unique_ptr<Value> MakeUInt32Value(std::string value);
 std::unique_ptr<Value> MakeUInt32Value(uint32_t value);
-std::unique_ptr<Value> MakeUInt64Value(std::string& value);
+std::unique_ptr<Value> MakeUInt64Value(std::string value);
 std::unique_ptr<Value> MakeUInt64Value(uint64_t value);
 
-std::unique_ptr<Value> MakeInt8Value(std::string& value);
+std::unique_ptr<Value> MakeInt8Value(std::string value);
 std::unique_ptr<Value> MakeInt8Value(int8_t value);
-std::unique_ptr<Value> MakeInt16Value(std::string& value);
+std::unique_ptr<Value> MakeInt16Value(std::string value);
 std::unique_ptr<Value> MakeInt16Value(int16_t value);
-std::unique_ptr<Value> MakeInt32Value(std::string& value);
+std::unique_ptr<Value> MakeInt32Value(std::string value);
 std::unique_ptr<Value> MakeInt32Value(int32_t value);
-std::unique_ptr<Value> MakeInt64Value(std::string& value);
+std::unique_ptr<Value> MakeInt64Value(std::string value);
 std::unique_ptr<Value> MakeInt64Value(int64_t value);
 
-std::unique_ptr<Value> MakeStringValue(std::string& value);
+std::unique_ptr<Value> MakeStringValue(std::string value);
 
 #endif // VALUE_H

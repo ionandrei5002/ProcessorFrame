@@ -9,8 +9,6 @@
 #include "comparator.h"
 #include "value.h"
 
-using namespace std;
-
 int main()
 {
     Schema schema;
@@ -20,7 +18,7 @@ int main()
             .push(Node("realm", Type::INT32))
             .push(Node("silo", Type::STRING));
 
-    cout << schema << endl;
+    std::cout << schema << std::endl;
 
     std::vector<Row> rows;
     std::string source = "/home/andrei/BI Python/Output/RealmImport/";
@@ -41,8 +39,8 @@ int main()
         for(auto it = files.begin(); it != files.end(); ++it)
         {
             CsvReader reader(source + (*it), schema, &rows);
-            cout << (*it) << " rows readed : " << reader.read() << endl;
-            cout << (*it) << " size: " << rows.size() << endl;
+            std::cout << (*it) << " rows readed : " << reader.read() << std::endl;
+            std::cout << (*it) << " size: " << rows.size() << std::endl;
         }
 
         end = std::chrono::high_resolution_clock::now();
@@ -78,8 +76,7 @@ int main()
             visitors.push_back(Visitor::builder(schema.peek(i)));
         }
 
-        std::string dt("2015-08-15");
-        std::unique_ptr<Value> date = MakeStringValue(dt);
+        std::unique_ptr<Value> date = MakeStringValue("2015-08-15");
         date->print(std::cout);
         std::cout << std::endl;
 
@@ -103,7 +100,7 @@ int main()
                 }
                 visitors[(visitors.size() - 1)]->print(out);
 
-                out << endl;
+                out << std::endl;
                 rows_write++;
             } else {
                 break;
@@ -118,6 +115,8 @@ int main()
         std::chrono::duration<double> elapsed_time = end - start;
 
         std::cout << "write duration = " << elapsed_time.count() << "s" << std::endl;
+        std::cout << "capacity : " << rows.capacity() << std::endl;
+        std::cout << "size: " << rows.size() << std::endl;
         std::cout << "memory used: " << ((rows.capacity() * sizeof(Row) + rows_bytes) / 1024) << " kb" << std::endl;
         std::cout << "memory rows: " << (rows_bytes / 1024) << " kb" << std::endl;
         std::cout << "avg row size: " << (rows_bytes / rows.size()) << " b" << std::endl;
