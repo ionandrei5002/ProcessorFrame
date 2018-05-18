@@ -42,7 +42,6 @@ int main()
             CsvReader reader(source + (*it), schema, &rows);
             std::cout << (*it) << " rows readed : " << reader.read() << std::endl;
             std::cout << (*it) << " size: " << rows.size() << std::endl;
-            break;
         }
 
         end = std::chrono::high_resolution_clock::now();
@@ -55,7 +54,7 @@ int main()
         std::chrono::time_point<std::chrono::high_resolution_clock> start, end;
         start = std::chrono::high_resolution_clock::now();
 
-        Comparator comp(schema, std::vector<uint64_t>({2}));
+        Comparator comp(schema, std::vector<uint64_t>({1,2}));
 
         std::sort(rows.begin(), rows.end(), std::ref(comp));
 
@@ -72,15 +71,13 @@ int main()
 
         std::ofstream out("/home/andrei/Desktop/output.txt");
 
-        std::vector<std::unique_ptr<Visitor>> visitors;
+        std::vector<std::unique_ptr<Visitor>> current_visitors;
+        std::vector<std::unique_ptr<Visitor>> prev_visitors;
         for(uint64_t i = 0; i < schema.size(); i++)
         {
-            visitors.push_back(Visitor::builder(schema.peek(i)));
+            current_visitors.push_back(Visitor::builder(schema.peek(i)));
+            prev_visitors.push_back(Visitor::builder(schema.peek(i)));
         }
-
-        std::unique_ptr<Value> date = MakeStringValue("2015-08-15");
-        date->print(std::cout);
-        std::cout << std::endl;
 
         std::vector<std::shared_ptr<Aggregator>> aggregators;
         aggregators.push_back(std::make_shared<Count<Int64Type>>());
@@ -90,15 +87,50 @@ int main()
         aggregators.push_back(std::make_shared<None<StringType>>());
 
         int rows_write = 0;
-        for(auto jt = rows.begin(); jt != rows.end(); ++jt)
+
+        {
+            auto prev = rows.begin();
+
+            Row& row = (*prev);
+            rows_bytes += row.size();
+            uint64_t pos = 0;
+            for(uint64_t i = 0; i < prev_visitors.size(); i++)
+            {
+                pos = prev_visitors[i]->set(row.buffer(), pos);
+                aggregators[i]->inputValue(prev_visitors[i]->get());
+            }
+        }
+
+        for(auto jt = (rows.begin() + 1); jt != rows.end(); ++jt)
         {
             Row& row = (*jt);
             rows_bytes += row.size();
             uint64_t pos = 0;
-            for(uint64_t i = 0; i < visitors.size(); i++)
+            for(uint64_t i = 0; i < current_visitors.size(); i++)
             {
-                pos = visitors[i]->set(row.buffer(), pos);
-                aggregators[i]->inputValue(visitors[i]->get());
+                pos = current_visitors[i]->set(row.buffer(), pos);
+                aggregators[i]->inputValue(current_visitors[i]->get());
+            }
+
+            for(uint64_t i = 1; i < 3; i++)
+            {
+                if (current_visitors[i]->get() != prev_visitors[i]->get())
+                {
+                    for(auto it = aggregators.begin(); it != aggregators.end(); ++it)
+                    {
+                        (*it)->print(out);
+                        (*it)->reset();
+                        out << ",";
+                    }
+                    out << std::endl;
+                    break;
+                }
+            }
+
+            pos = 0;
+            for(uint64_t i = 0; i < current_visitors.size(); i++)
+            {
+                pos = prev_visitors[i]->set(row.buffer(), pos);
             }
 
 //            std::unique_ptr<Value> val = visitors[2]->getValue();
@@ -117,13 +149,6 @@ int main()
 //                break;
 //            }
         }
-
-        for(auto it = aggregators.begin(); it != aggregators.end(); ++it)
-        {
-            (*it)->print(std::cout);
-            std::cout << ",";
-        }
-        std::cout << std::endl;
 
         std::cout << "rows write: " << rows_write << std::endl;
 
