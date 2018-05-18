@@ -8,6 +8,7 @@
 #include "csvreader.h"
 #include "comparator.h"
 #include "value.h"
+#include "aggregator.h"
 
 int main()
 {
@@ -41,6 +42,7 @@ int main()
             CsvReader reader(source + (*it), schema, &rows);
             std::cout << (*it) << " rows readed : " << reader.read() << std::endl;
             std::cout << (*it) << " size: " << rows.size() << std::endl;
+            break;
         }
 
         end = std::chrono::high_resolution_clock::now();
@@ -80,6 +82,13 @@ int main()
         date->print(std::cout);
         std::cout << std::endl;
 
+        std::vector<std::shared_ptr<Aggregator>> aggregators;
+        aggregators.push_back(std::make_shared<Count<Int64Type>>());
+        aggregators.push_back(std::make_shared<None<Int32Type>>());
+        aggregators.push_back(std::make_shared<None<StringType>>());
+        aggregators.push_back(std::make_shared<None<Int32Type>>());
+        aggregators.push_back(std::make_shared<None<StringType>>());
+
         int rows_write = 0;
         for(auto jt = rows.begin(); jt != rows.end(); ++jt)
         {
@@ -89,23 +98,32 @@ int main()
             for(uint64_t i = 0; i < visitors.size(); i++)
             {
                 pos = visitors[i]->set(row.buffer(), pos);
+                aggregators[i]->inputValue(visitors[i]->get());
             }
-            std::unique_ptr<Value> val = visitors[2]->getValue();
-            if (val->operator<(date))
-            {
-                for(uint64_t i = 0; i < (visitors.size() - 1); i++)
-                {
-                    visitors[i]->print(out);
-                    out << ",";
-                }
-                visitors[(visitors.size() - 1)]->print(out);
 
-                out << std::endl;
-                rows_write++;
-            } else {
-                break;
-            }
+//            std::unique_ptr<Value> val = visitors[2]->getValue();
+//            if (val->operator<(date))
+//            {
+//                for(uint64_t i = 0; i < (visitors.size() - 1); i++)
+//                {
+//                    visitors[i]->print(out);
+//                    out << ",";
+//                }
+//                visitors[(visitors.size() - 1)]->print(out);
+
+//                out << std::endl;
+//                rows_write++;
+//            } else {
+//                break;
+//            }
         }
+
+        for(auto it = aggregators.begin(); it != aggregators.end(); ++it)
+        {
+            (*it)->print(std::cout);
+            std::cout << ",";
+        }
+        std::cout << std::endl;
 
         std::cout << "rows write: " << rows_write << std::endl;
 

@@ -14,6 +14,7 @@ set(HEADERS
         allocator/free_list_allocator.h
         comparator.h
         value.h
+        aggregator.h
 )
 set(SOURCES ${HEADERS}
         row.cpp
@@ -23,6 +24,7 @@ set(SOURCES ${HEADERS}
         csvreader.cpp
         main.cpp
         value.cpp
+        aggregator.cpp
 )
 
 add_executable(${PROJECT_NAME} ${SOURCES})
