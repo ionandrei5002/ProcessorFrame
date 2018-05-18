@@ -109,7 +109,6 @@ int main()
             for(uint64_t i = 0; i < current_visitors.size(); i++)
             {
                 pos = current_visitors[i]->set(row.buffer(), pos);
-                aggregators[i]->inputValue(current_visitors[i]->get());
             }
 
             for(uint64_t i = 1; i < 3; i++)
@@ -125,6 +124,11 @@ int main()
                     out << std::endl;
                     break;
                 }
+            }
+
+            for(uint64_t i = 0; i < current_visitors.size(); i++)
+            {
+                aggregators[i]->inputValue(current_visitors[i]->get());
             }
 
             pos = 0;
