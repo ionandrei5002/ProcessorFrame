@@ -12,6 +12,7 @@
 
 #include "row.h"
 #include "schema.h"
+#include "table.h"
 
 class String2Type
 {
@@ -145,11 +146,10 @@ class CsvReader
 {
 private:
     std::string _fileName;
-    Schema _schema;
-    std::vector<Row>* _rows;
+    Table& _table;
 public:
-    CsvReader(std::string fileName, Schema schema, std::vector<Row>* rows)
-        :_fileName(fileName),_schema(schema),_rows(rows) {}
+    CsvReader(std::string fileName, Table& table)
+        :_fileName(fileName),_table(table) {}
     uint64_t read();
     static std::unique_ptr<String2Type> builder(Node node);
 private:

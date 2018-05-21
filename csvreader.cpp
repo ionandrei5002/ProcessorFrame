@@ -2,6 +2,9 @@
 
 uint64_t CsvReader::read()
 {
+    Schema& _schema = _table.getSchema();
+    std::vector<Row>& _rows = _table.getRows();
+
     uint64_t rowsRead = 0;
 
     std::chrono::time_point<std::chrono::high_resolution_clock> start, end;
@@ -31,7 +34,7 @@ uint64_t CsvReader::read()
         }
 
         piece.clear();
-        _rows->emplace_back(Row(row.buffer(), row.size()));
+        _rows.emplace_back(Row(row.buffer(), row.size()));
         row.reset();
         rowsRead++;
     }

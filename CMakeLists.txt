@@ -15,6 +15,9 @@ set(HEADERS
         comparator.h
         value.h
         aggregator.h
+        table.h
+        sorter.h
+        groupby.h
 )
 set(SOURCES ${HEADERS}
         row.cpp
@@ -25,6 +28,9 @@ set(SOURCES ${HEADERS}
         main.cpp
         value.cpp
         aggregator.cpp
+        table.cpp
+        sorter.cpp
+        groupby.cpp
 )
 
 add_executable(${PROJECT_NAME} ${SOURCES})
