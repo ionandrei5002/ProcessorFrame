@@ -11,41 +11,51 @@
 #include "table.h"
 #include "aggregator.h"
 #include "visitor.h"
+#include "sorter.h"
 
 class GroupBy
 {
 private:
-    Table& _table;
-    Table _result;
-    std::vector<uint64_t> _group;
-    std::unordered_map<uint64_t, std::shared_ptr<Aggregator>> _operations;
-    std::vector<uint64_t> _positions;
+    Table& _inputTable;
+    Table _outputTable;
+    std::vector<std::pair<uint64_t, std::shared_ptr<Aggregator>>> _inputColumns;
+    std::vector<uint64_t> _outputColumns;
 public:
-    GroupBy(Table& table):_table(table) {}
+    GroupBy(Table& table):_inputTable(table) {}
     Table& getResult();
     GroupBy& Group(std::shared_ptr<Aggregator> column)
     {
-        uint64_t pos = _table.getSchema().position(column->getColumn());
-        _group.push_back(pos);
-        _operations.emplace(pos, column);
+        uint64_t pos = _inputTable.getSchema().position(column->getColumn());
+        _inputColumns.push_back(std::make_pair(pos, column));
         return *this;
     }
     GroupBy& Sum(std::shared_ptr<Aggregator> column)
     {
-        uint64_t pos = _table.getSchema().position(column->getColumn());
-        _operations.emplace(pos, column);
+        uint64_t pos = _inputTable.getSchema().position(column->getColumn());
+        _inputColumns.push_back(std::make_pair(pos, column));
         return *this;
     }
     GroupBy& Count(std::shared_ptr<Aggregator> column)
     {
-        uint64_t pos = _table.getSchema().position(column->getColumn());
-        _operations.emplace(pos, column);
+        uint64_t pos = _inputTable.getSchema().position(column->getColumn());
+        _inputColumns.push_back(std::make_pair(pos, column));
         return *this;
     }
-private:
-    void operationsPosition();
-    Schema buildResultSchema();
-    void buildResultTable();
+    GroupBy& CountDistinct(std::shared_ptr<Aggregator> column)
+    {
+        uint64_t pos = _inputTable.getSchema().position(column->getColumn());
+        _inputColumns.push_back(std::make_pair(pos, column));
+        return *this;
+    }
+    GroupBy& Const(std::shared_ptr<Aggregator> column)
+    {
+        uint64_t pos = 9999;
+        _inputColumns.push_back(std::make_pair(pos, column));
+        return *this;
+    }
+public:
+    Schema buildOutputSchema();
+    void buildOutputTable();
 };
 
 #endif // GROUPBY_H

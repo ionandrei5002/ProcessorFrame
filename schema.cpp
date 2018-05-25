@@ -38,6 +38,7 @@ Schema& Schema::push(Node node)
     {
         Node value = _nodes.at(i);
         if (value == node) {
+            std::cout << "duplicate column name" << std::endl;
             throw;
         }
     }
@@ -61,7 +62,7 @@ uint64_t Schema::position(std::string name)
             return i;
         }
     }
-
+    std::cout << "column " << name << " not found" << std::endl;
     throw;
 }
 

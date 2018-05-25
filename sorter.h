@@ -14,6 +14,7 @@ class Sorter
 {
 private:
     std::vector<std::string> _columns;
+    std::vector<std::string> _positions;
 public:
     Sorter(std::vector<std::string> columns):_columns(columns) {}
     void sort(Table& table);
