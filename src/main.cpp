@@ -20,11 +20,10 @@ int main()
             .push(Node("date", Type::STRING))
             .push(Node("realm", Type::INT32))
             .push(Node("silo", Type::STRING));
-
+    
     std::cout << schema << std::endl;
 
     Table table(schema);
-
     std::vector<Row>& rows = table.getRows();
     std::string source = "/home/andrei/BI Python/Output/RealmImport/";
     std::experimental::filesystem::path path(source);
@@ -37,7 +36,7 @@ int main()
             files.emplace_back((*filename).string());
         break;
     }
-//    std::sort(files.begin(), files.end());
+   // std::sort(files.begin(), files.end());
 
     {
         std::chrono::time_point<std::chrono::high_resolution_clock> start, end;
