@@ -54,60 +54,50 @@ int main()
         std::cout << "read duration = " << elapsed_time.count() << "s" << std::endl;
     }
 
-    GroupBy agg(table);
-    agg.Group(std::make_shared<None<Int32Type>>("ggi"))
-//                .Group(std::make_shared<None<StringType>>("date"))
-            .Group(std::make_shared<None<Int32Type>>("realm"))
-            .Group(std::make_shared<None<StringType>>("silo"))
-//                .Count(std::make_shared<Count<Int64Type>>("udid"))
-            .CountDistinct(std::make_shared<CountDistinct<Int64Type>>("udid"))
-            .Const(std::make_shared<Const<Int64Type>>("constant", MakeInt64Value(999)));
-    agg.buildOutputSchema();
-    agg.buildOutputTable();
+   {
+       GroupBy agg(table);
+        agg.Group(std::make_shared<None<Int32Type>>("ggi"))
+                .Group(std::make_shared<None<Int32Type>>("realm"))
+                .Group(std::make_shared<None<StringType>>("silo"))
+                .CountDistinct(std::make_shared<CountDistinct<Int64Type>>("udid"))
+                .Const(std::make_shared<Const<Int64Type>>("constant", MakeInt64Value(999)));
+        agg.buildOutputSchema();
+        agg.buildOutputTable();
 
-//    {
-//        GroupBy agg(table);
-//        agg.Group(std::make_shared<None<Int32Type>>("ggi"))
-////                .Group(std::make_shared<None<StringType>>("date"))
-//                .Group(std::make_shared<None<Int32Type>>("realm"))
-//                .Group(std::make_shared<None<StringType>>("silo"))
-////                .Count(std::make_shared<Count<Int64Type>>("udid"))
-//                .CountDistinct(std::make_shared<CountDistinct<Int64Type>>("udid"));
+       std::ofstream out("/home/andrei/Desktop/output.txt");
 
-//        std::ofstream out("/home/andrei/Desktop/output.txt");
+       Table& result = agg.getResult();
 
-//        Table& result = agg.getResult();
+       Sorter sorter(std::vector<std::string>({"ggi","realm","silo"}));
+       sorter.sort(result);
 
-//        Sorter sorter(std::vector<std::string>({"ggi","realm","silo"}));
-//        sorter.sort(result);
+       std::vector<std::unique_ptr<Visitor>> visitors;
 
-//        std::vector<std::unique_ptr<Visitor>> visitors;
+       for(uint64_t i = 0; i < result.getSchema().size(); i++)
+       {
+           visitors.push_back(Visitor::builder(result.getSchema().peek(i)));
+       }
 
-//        for(uint64_t i = 0; i < result.getSchema().size(); i++)
-//        {
-//            visitors.push_back(Visitor::builder(result.getSchema().peek(i)));
-//        }
+       for(auto jt = result.getRows().begin(); jt != result.getRows().end(); ++jt)
+       {
+           Row& row = (*jt);
+           uint64_t pos = 0;
+           for(uint64_t i = 0; i < visitors.size(); i++)
+           {
+               pos = visitors[i]->set(row.buffer(), pos);
+           }
 
-//        for(auto jt = result.getRows().begin(); jt != result.getRows().end(); ++jt)
-//        {
-//            Row& row = (*jt);
-//            uint64_t pos = 0;
-//            for(uint64_t i = 0; i < visitors.size(); i++)
-//            {
-//                pos = visitors[i]->set(row.buffer(), pos);
-//            }
+           for(uint64_t i = 0; i < (visitors.size() - 1); i++)
+           {
+               visitors[i]->print(out);
+               out << ",";
+           }
+           visitors[(visitors.size() - 1)]->print(out);
+           out << std::endl;
+       }
 
-//            for(uint64_t i = 0; i < (visitors.size() - 1); i++)
-//            {
-//                visitors[i]->print(out);
-//                out << ",";
-//            }
-//            visitors[(visitors.size() - 1)]->print(out);
-//            out << std::endl;
-//        }
-
-//        out.close();
-//    }
+       out.close();
+   }
 
     return 0;
 }

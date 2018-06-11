@@ -7,6 +7,7 @@
 #include "types.h"
 #include "bytebuffer.h"
 #include "row.h"
+#include "visitor.h"
 #include "value.h"
 
 class Aggregator
@@ -20,8 +21,8 @@ public:
     std::string getColumn();
     Type::type getInputType();
     Type::type getOutputType();
-    virtual void inputValue(ViewByteBuffer input) = 0;
-    virtual ViewByteBuffer outputValue() = 0;
+    virtual void inputValue(std::unique_ptr<Visitor>& input) = 0;
+    // virtual std::unique_ptr<Visitor> outputValue() = 0;
     virtual void writeValue(RawRow& row) = 0;
     virtual void reset() = 0;
     virtual void print(std::ostream& out) = 0;
@@ -40,14 +41,14 @@ public:
         _inputType = T::type_num;
         _outputType = U::type_num;
     }
-    void inputValue(ViewByteBuffer input) override
+    void inputValue(std::unique_ptr<Visitor>& input) override
     {
-        _value = input;
+        _value = input->get();
     }
-    ViewByteBuffer outputValue() override
-    {
-        return _value;
-    }
+    // std::unique_ptr<Visitor> outputValue() override
+    // {
+    //     return _value;
+    // }
     void writeValue(RawRow& row) override
     {
         row.append(_value._data, _value._size);
@@ -78,14 +79,14 @@ public:
         _inputType = StringType::type_num;
         _outputType = StringType::type_num;
     }
-    void inputValue(ViewByteBuffer input) override
+    void inputValue(std::unique_ptr<Visitor>& input) override
     {
-        _value = input;
+        _value = input->get();
     }
-    ViewByteBuffer outputValue() override
-    {
-        return _value;
-    }
+    // std::unique_ptr<Visitor> outputValue() override
+    // {
+    //     return _value;
+    // }
     void writeValue(RawRow& row) override
     {
         uint64_t size = _value._size;
@@ -116,19 +117,19 @@ public:
         _inputType = T::type_num;
         _outputType = U::type_num;
     }
-    void inputValue(ViewByteBuffer input) override
+    void inputValue(std::unique_ptr<Visitor>& input) override
     {
         _type* this_value = nullptr;
-        this_value = reinterpret_cast<_type*>(input._data);
+        this_value = reinterpret_cast<_type*>(input->get()._data);
         _value += *this_value;
     }
-    ViewByteBuffer outputValue() override
-    {
-        ViewByteBuffer _tmp;
-        _tmp._size = sizeof(_type);
-        _tmp._data = reinterpret_cast<char*>(&_value);
-        return _tmp;
-    }
+    // std::unique_ptr<Visitor> outputValue() override
+    // {
+    //     ViewByteBuffer _tmp;
+    //     _tmp._size = sizeof(_type);
+    //     _tmp._data = reinterpret_cast<char*>(&_value);
+    //     return _tmp;
+    // }
     void writeValue(RawRow& row) override
     {
         ViewByteBuffer _tmp;
@@ -160,20 +161,20 @@ public:
         _inputType = T::type_num;
         _outputType = U::type_num;
     }
-    void inputValue(ViewByteBuffer input) override
+    void inputValue(std::unique_ptr<Visitor>& input) override
     {
         _type* this_value = nullptr;
-        this_value = reinterpret_cast<_type*>(input._data);
+        this_value = reinterpret_cast<_type*>(input->get()._data);
         distinct.emplace(*this_value);
         _value = distinct.size();
     }
-    ViewByteBuffer outputValue() override
-    {
-        ViewByteBuffer _tmp;
-        _tmp._size = sizeof(uint64_t);
-        _tmp._data = reinterpret_cast<char*>(&_value);
-        return _tmp;
-    }
+    // std::unique_ptr<Visitor> outputValue() override
+    // {
+    //     ViewByteBuffer _tmp;
+    //     _tmp._size = sizeof(uint64_t);
+    //     _tmp._data = reinterpret_cast<char*>(&_value);
+    //     return _tmp;
+    // }
     void writeValue(RawRow& row) override
     {
         ViewByteBuffer _tmp;
@@ -205,17 +206,17 @@ public:
         _inputType = T::type_num;
         _outputType = U::type_num;
     }
-    void inputValue(ViewByteBuffer input) override
+    void inputValue(std::unique_ptr<Visitor>& input) override
     {
         _value ++;
     }
-    ViewByteBuffer outputValue() override
-    {
-        ViewByteBuffer _tmp;
-        _tmp._size = sizeof(_type);
-        _tmp._data = reinterpret_cast<char*>(&_value);
-        return _tmp;
-    }
+    // std::unique_ptr<Visitor> outputValue() override
+    // {
+    //     ViewByteBuffer _tmp;
+    //     _tmp._size = sizeof(_type);
+    //     _tmp._data = reinterpret_cast<char*>(&_value);
+    //     return _tmp;
+    // }
     void writeValue(RawRow& row) override
     {
         ViewByteBuffer _tmp;
@@ -247,11 +248,11 @@ public:
         _inputType = T::type_num;
         _outputType = U::type_num;
     }
-    void inputValue(ViewByteBuffer input) override {}
-    ViewByteBuffer outputValue() override
-    {
-        return _value;
-    }
+    void inputValue(std::unique_ptr<Visitor>& input) override {}
+    // std::unique_ptr<Visitor> outputValue() override
+    // {
+    //     return _value;
+    // }
     void writeValue(RawRow& row) override
     {
         row.append(_value._data, _value._size);
@@ -280,11 +281,11 @@ public:
         _inputType = StringType::type_num;
         _outputType = StringType::type_num;
     }
-    void inputValue(ViewByteBuffer input) override {}
-    ViewByteBuffer outputValue() override
-    {
-        return _value;
-    }
+    void inputValue(std::unique_ptr<Visitor>& input) override {}
+    // std::unique_ptr<Visitor> outputValue() override
+    // {
+    //     return _value;
+    // }
     void writeValue(RawRow& row) override
     {
         uint64_t size = _value._size;
