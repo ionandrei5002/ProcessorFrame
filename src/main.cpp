@@ -34,7 +34,7 @@ int main()
         auto filename = (--it.path().end());
         if (!((*filename).string().find("pau", 0) != std::string::npos))
             files.emplace_back((*filename).string());
-        break;
+        // break;
     }
    // std::sort(files.begin(), files.end());
 
@@ -55,21 +55,23 @@ int main()
     }
 
    {
-       GroupBy agg(table);
+        Sorter sorter(std::vector<std::string>({"ggi","realm","silo"}));
+        sorter.sort(table);
+
+        GroupBy agg(table);
         agg.Group(std::make_shared<None<Int32Type>>("ggi"))
                 .Group(std::make_shared<None<Int32Type>>("realm"))
                 .Group(std::make_shared<None<StringType>>("silo"))
-                .CountDistinct(std::make_shared<CountDistinct<Int64Type>>("udid"))
-                .Const(std::make_shared<Const<Int64Type>>("constant", MakeInt64Value(999)));
+                .Const(std::make_shared<Const<Int64Type>>("constant", MakeInt64Value(999)))
+                .Aggregation(std::make_shared<CountDistinct<Int64Type>>("udid"))
+                .Aggregation(std::make_shared<CountDistinct<Int64Type>>("date"));;
+                
         agg.buildOutputSchema();
         agg.buildOutputTable();
 
-       std::ofstream out("/home/andrei/Desktop/output.txt");
+       std::ofstream out("/home/andrei/Desktop/output.csv");
 
        Table& result = agg.getResult();
-
-       Sorter sorter(std::vector<std::string>({"ggi","realm","silo"}));
-       sorter.sort(result);
 
        std::vector<std::unique_ptr<Visitor>> visitors;
 

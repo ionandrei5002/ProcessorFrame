@@ -18,42 +18,16 @@ class GroupBy
 private:
     Table& _inputTable;
     Table _outputTable;
-    std::vector<std::unique_ptr<Visitor>> _visitors;
     std::vector<std::pair<std::shared_ptr<Aggregator>, std::reference_wrapper<std::unique_ptr<Visitor>>>> _inputColumns;
-    void buildVisitors();
+    std::vector<std::unique_ptr<Visitor>> _comparationColumns;
+    std::vector<uint64_t> _group;
+    void buildComparationColumns();
 public:
-    GroupBy(Table& table):_inputTable(table) { buildVisitors(); }
+    GroupBy(Table& table):_inputTable(table) {}
     Table& getResult();
-    GroupBy& Group(std::shared_ptr<Aggregator> column)
-    {
-        uint64_t pos = _inputTable.getSchema().position(column->getColumn());
-        _inputColumns.push_back(std::make_pair(column, std::ref(_visitors[pos])));
-        return *this;
-    }
-    GroupBy& Sum(std::shared_ptr<Aggregator> column)
-    {
-        uint64_t pos = _inputTable.getSchema().position(column->getColumn());
-        _inputColumns.push_back(std::make_pair(column, std::ref(_visitors[pos])));
-        return *this;
-    }
-    GroupBy& Count(std::shared_ptr<Aggregator> column)
-    {
-        uint64_t pos = _inputTable.getSchema().position(column->getColumn());
-        _inputColumns.push_back(std::make_pair(column, std::ref(_visitors[pos])));
-        return *this;
-    }
-    GroupBy& CountDistinct(std::shared_ptr<Aggregator> column)
-    {
-        uint64_t pos = _inputTable.getSchema().position(column->getColumn());
-        _inputColumns.push_back(std::make_pair(column, std::ref(_visitors[pos])));
-        return *this;
-    }
-    GroupBy& Const(std::shared_ptr<Aggregator> column)
-    {
-        auto nullVisitor = std::unique_ptr<Visitor>(nullptr);
-        _inputColumns.push_back(std::make_pair(column, std::ref(nullVisitor)));
-        return *this;
-    }
+    GroupBy& Group(std::shared_ptr<Aggregator> column);
+    GroupBy& Aggregation(std::shared_ptr<Aggregator> column);
+    GroupBy& Const(std::shared_ptr<Aggregator> column);
 public:
     Schema buildOutputSchema();
     void buildOutputTable();
